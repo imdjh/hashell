@@ -1,0 +1,10 @@
+image: daocloud/ci-node:0.10
+
+env:
+    - MYWORLD = "Node!"
+
+install:
+    - echo "Hello," $MYWORLD
+
+script:
+    - node --version
