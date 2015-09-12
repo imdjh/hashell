@@ -1,0 +1,30 @@
+FROM debian:jessie
+
+MAINTAINER Jiahao.Dai "dyejarhoo@gmail.com"
+
+## ensure locale is set during build
+ENV LANG            C.UTF-8
+
+RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
+RUN echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list
+
+ENV NGINX_VERSION 1.9.4-1~jessie
+
+RUN echo 'deb http://ppa.launchpad.net/hvr/ghc/ubuntu trusty main' > /etc/apt/sources.list.d/ghc.list && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F6F88286 && \
+    apt-get update && \
+    apt-get --no-install-recommends install -y ca-certificates nginx=${NGINX_VERSION} \
+            cabal-install-1.22 ghc-7.10.2 happy-1.19.5 alex-3.1.4 \
+            zlib1g-dev libtinfo-dev libsqlite3-0 libsqlite3-dev ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
+VOLUME ["/var/cache/nginx"]
+ENV PATH /root/.cabal/bin:/opt/cabal/1.22/bin:/opt/ghc/7.10.2/bin:/opt/happy/1.19.5/bin:/opt/alex/3.1.4/bin:$PATH
+
+EXPOSE 80
+
+CMD nginx && ghci
